@@ -37,6 +37,7 @@ fileprivate func AudioUnitOutputCallback(inUserData: UnsafeMutableRawPointer, io
     }
     if audioUnit.type.method == 2 {
         var inNumberFrames = inNumberFrames
+        audioUnit.bufferList!.pointee.mBuffers.mDataByteSize = 0x800
         ExtAudioFileRead(audioUnit.audioFile!, &inNumberFrames, audioUnit.bufferList!)
         memcpy(ioData!.pointee.mBuffers.mData, audioUnit.bufferList!.pointee.mBuffers.mData, Int(audioUnit.bufferList!.pointee.mBuffers.mDataByteSize))
         ioData!.pointee.mBuffers.mDataByteSize = audioUnit.bufferList!.pointee.mBuffers.mDataByteSize
@@ -196,10 +197,9 @@ class AudioUnitCaptrueManager {
             audioFormat = self.audioFormat
         } else {
             try? AVAudioSession.sharedInstance().setCategory(.playback)
+            audioFormat = AudioFileHandler.shared.configurePlayFilePath()
             ExtAudioFileOpenURL(AudioFileHandler.shared.configureUnitPlayFilePath()!, &audioFile)
             initBufferList()
-            let size = UInt32(MemoryLayout<AudioStreamPacketDescription>.stride)
-            ExtAudioFileSetProperty(audioFile!, kExtAudioFileProperty_ClientDataFormat, size, &audioFormat)
         }
         //Enable IO for Recording
         var flag:UInt32 = 1
