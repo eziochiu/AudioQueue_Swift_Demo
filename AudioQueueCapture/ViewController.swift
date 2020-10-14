@@ -16,14 +16,17 @@ class ViewController: UIViewController {
     deinit {
     }
     @IBAction func startRecord(_ sender: UIButton) {
-        AudioQueueCaptureManager.shared.startRecord()
+//        AudioQueueCaptureManager.shared.startRecord()
+        AudioUnitCaptrueManager.shared.startRecord()
     }
 
     @IBAction func stopRecord(_ sender: UIButton) {
-        AudioQueueCaptureManager.shared.stopRecord()
+//        AudioQueueCaptureManager.shared.stopRecord()
+        AudioUnitCaptrueManager.shared.stopRecord()
     }
     @IBAction func playRecord(_ sender: UIButton) {
-        AudioQueueCaptureManager.shared.play()
+//        AudioQueueCaptureManager.shared.play()
+        AudioUnitCaptrueManager.shared.play()
     }
 }
 

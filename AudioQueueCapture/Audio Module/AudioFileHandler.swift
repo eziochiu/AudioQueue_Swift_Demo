@@ -33,17 +33,17 @@ class AudioFileHandler: NSObject {
     }
     
     // MARK: - public method
-    func startVoiceRecordByAudioUnitByAudioConverter(audioConverter: AudioConverterRef, isNeedMagicCookie: Bool, audioDesc: AudioStreamBasicDescription) {
+    func startVoiceRecordByAudioUnitByAudioConverter(audioConverter: AudioConverterRef?, isNeedMagicCookie: Bool, audioDesc: AudioStreamBasicDescription) {
         recordFilePath = createFilePath()
         recordFile = createAudioFileWithFilePath(filePath: recordFilePath!, audioDesc: audioDesc)
-        if isNeedMagicCookie && recordFile != nil {
-            copyEncoderCookieToFileByAudioConverter(audioConverter: audioConverter, inFile: recordFile!)
+        if isNeedMagicCookie && recordFile != nil && audioConverter != nil {
+            copyEncoderCookieToFileByAudioConverter(audioConverter: audioConverter!, inFile: recordFile!)
         }
     }
     
-    func stopVoiceRecordAudioConverter(audioConverter: AudioConverterRef, isNeedMagicCookie: Bool) {
-        if isNeedMagicCookie {
-            copyEncoderCookieToFileByAudioConverter(audioConverter: audioConverter, inFile: recordFile!)
+    func stopVoiceRecordAudioConverter(audioConverter: AudioConverterRef?, isNeedMagicCookie: Bool) {
+        if isNeedMagicCookie && audioConverter != nil {
+            copyEncoderCookieToFileByAudioConverter(audioConverter: audioConverter!, inFile: recordFile!)
         }
         AudioFileClose(recordFile!)
         recordCurrentPacket = 0
@@ -94,6 +94,13 @@ class AudioFileHandler: NSObject {
         } else {
             return nil
         }
+    }
+    
+    func configureUnitPlayFilePath() -> CFURL? {
+        var filePathArray = Array(createFilePath().utf8)
+        let filePathSize = createFilePath().count
+        let audioFileUrl = CFURLCreateFromFileSystemRepresentation(nil, &filePathArray, filePathSize, false)
+        return audioFileUrl
     }
     
     // MARK: - private method
