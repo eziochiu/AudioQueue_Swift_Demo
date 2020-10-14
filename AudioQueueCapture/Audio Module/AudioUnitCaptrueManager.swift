@@ -10,7 +10,6 @@ import AudioToolbox
 import AVFoundation
 
 fileprivate func AudioUnitInputCallback(inUserData: UnsafeMutableRawPointer, ioActionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, inTimeStamp: UnsafePointer<AudioTimeStamp>, inBusNumber: UInt32, inNumberFrames: UInt32, ioData: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
-    print("recording...")
     let audioUnit = unsafeBitCast(inUserData, to:AudioUnitCaptrueManager.self)
     var status = noErr;
     if audioUnit.type.method == 0 {
@@ -31,7 +30,6 @@ fileprivate func AudioUnitInputCallback(inUserData: UnsafeMutableRawPointer, ioA
 }
 
 fileprivate func AudioUnitOutputCallback(inUserData: UnsafeMutableRawPointer, ioActionFlags: UnsafeMutablePointer<AudioUnitRenderActionFlags>, inTimeStamp: UnsafePointer<AudioTimeStamp>, inBusNumber: UInt32, inNumberFrames: UInt32, ioData: UnsafeMutablePointer<AudioBufferList>?) -> OSStatus {
-    print("playing...")
     let status = noErr;
     let audioUnit = unsafeBitCast(inUserData, to:AudioUnitCaptrueManager.self)
     if ioData == nil{
@@ -40,6 +38,11 @@ fileprivate func AudioUnitOutputCallback(inUserData: UnsafeMutableRawPointer, io
     if audioUnit.type.method == 2 {
         var inNumberFrames = inNumberFrames
         ExtAudioFileRead(audioUnit.audioFile!, &inNumberFrames, audioUnit.bufferList!)
+        memcpy(ioData!.pointee.mBuffers.mData, audioUnit.bufferList!.pointee.mBuffers.mData, Int(audioUnit.bufferList!.pointee.mBuffers.mDataByteSize))
+        ioData!.pointee.mBuffers.mDataByteSize = audioUnit.bufferList!.pointee.mBuffers.mDataByteSize
+        if ioData!.pointee.mBuffers.mDataByteSize <= 0 {
+            audioUnit.stop()
+        }
     }
     let buffCount = ioData?.pointee.mNumberBuffers
     if buffCount != 1 {
@@ -100,17 +103,7 @@ class AudioUnitCaptrueManager {
     static let shared = AudioUnitCaptrueManager()
     
     private init() {
-        type.method = 1
-        initBufferList()
-    }
-    
-    fileprivate func initBufferList() {
-        let size = Int(MemoryLayout<AudioBufferList>.stride)
-        bufferList = UnsafeMutablePointer<AudioBufferList>.allocate(capacity: size)
-        bufferList?.pointee.mNumberBuffers = 1
-        bufferList?.pointee.mBuffers.mNumberChannels = 1
-        bufferList?.pointee.mBuffers.mDataByteSize = 0x1000
-        bufferList?.pointee.mBuffers.mData = malloc(Int(MemoryLayout<UInt32>.stride))
+        type.method = 2
     }
 
     deinit {
@@ -158,7 +151,10 @@ class AudioUnitCaptrueManager {
 
     func stop() {
         guard let queue = audioUnit else  { return }
+        print("play stopped")
         AudioOutputUnitStop(queue)
+        bufferList?.deallocate()
+        bufferList = nil
         audioUnit = nil
         isRunning = false
         isPlaying = false
@@ -167,7 +163,7 @@ class AudioUnitCaptrueManager {
     fileprivate func prepareUnit() -> AudioUnit? {
         var audioUnit: AudioUnit?
         
-        var audioDesc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: kAudioUnitSubType_VoiceProcessingIO, componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
+        var audioDesc = AudioComponentDescription(componentType: kAudioUnitType_Output, componentSubType: type.method == 2 ? kAudioUnitSubType_RemoteIO : kAudioUnitSubType_VoiceProcessingIO, componentManufacturer: kAudioUnitManufacturer_Apple, componentFlags: 0, componentFlagsMask: 0)
         
         guard let inputComponent = AudioComponentFindNext(nil, &audioDesc) else { return audioUnit }
         
@@ -178,22 +174,33 @@ class AudioUnitCaptrueManager {
         }
         return audioUnit
     }
+    
+    fileprivate func initBufferList() {
+        var flag: UInt32 = 0
+        if AudioUnitSetProperty(audioUnit!, kAudioUnitProperty_ShouldAllocateBuffer, kAudioUnitScope_Output, kOutputBus, &flag, UInt32(MemoryLayout<UInt32>.stride)) == noErr {
+            bufferList = UnsafeMutablePointer<AudioBufferList>.allocate(capacity: Int(MemoryLayout<AudioBufferList>.stride))
+            bufferList?.pointee.mNumberBuffers = 1
+            bufferList?.pointee.mBuffers.mNumberChannels = 1
+            bufferList?.pointee.mBuffers.mDataByteSize = 0x800
+            bufferList?.pointee.mBuffers.mData = UnsafeMutableRawPointer(malloc(Int(MemoryLayout<Int>.stride)))
+        }
+    }
 
     private func prepareForUnit() {
         print("准备录音")
+        guard let audioUnit = prepareUnit() else { return }
+        self.audioUnit = audioUnit
         var status: OSStatus
         var audioFormat: AudioStreamBasicDescription?
         if type.method == 0 || type.method == 1 {
             audioFormat = self.audioFormat
         } else {
-            try? AVAudioSession.sharedInstance().setCategory(.playAndRecord, options: .defaultToSpeaker)
-            try? AVAudioSession.sharedInstance().setActive(true, options: AVAudioSession.SetActiveOptions.init())
-            audioFormat = AudioFileHandler.shared.configurePlayFilePath()
+            try? AVAudioSession.sharedInstance().setCategory(.playback)
             ExtAudioFileOpenURL(AudioFileHandler.shared.configureUnitPlayFilePath()!, &audioFile)
+            initBufferList()
+            let size = UInt32(MemoryLayout<AudioStreamPacketDescription>.stride)
+            ExtAudioFileSetProperty(audioFile!, kExtAudioFileProperty_ClientDataFormat, size, &audioFormat)
         }
-        
-        guard let audioUnit = prepareUnit() else { return }
-        self.audioUnit = audioUnit
         //Enable IO for Recording
         var flag:UInt32 = 1
         status = AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_EnableIO, kAudioUnitScope_Input, kInputBus, &flag, UInt32(MemoryLayout<UInt32>.size))
@@ -219,7 +226,7 @@ class AudioUnitCaptrueManager {
         
         var callbackStruct = AURenderCallbackStruct(inputProc: AudioUnitInputCallback, inputProcRefCon: unsafeBitCast(self, to: UnsafeMutableRawPointer.self))
         
-        if type.method == 1 || type.method == 0 {
+        if type.method == 1 {
             status |= AudioUnitSetProperty(audioUnit, kAudioOutputUnitProperty_SetInputCallback, kAudioUnitScope_Global, kInputBus, &callbackStruct, UInt32(MemoryLayout<AURenderCallbackStruct>.size))
         } else {
             status |= AudioUnitSetProperty(audioUnit, kAudioUnitProperty_SetRenderCallback, kAudioUnitScope_Input, kOutputBus, &callbackStruct, UInt32(MemoryLayout<AURenderCallbackStruct>.size))
