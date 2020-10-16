@@ -7,10 +7,14 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		841630912537F9B500E0FC1A /* VideoCaptureRootController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841630902537F9B500E0FC1A /* VideoCaptureRootController.swift */; };
+		8416309A2537FBC800E0FC1A /* VideoCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 841630992537FBC800E0FC1A /* VideoCaptureController.swift */; };
 		842570B52536CE7300AD03E8 /* AudioUnitCaptrueManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842570B42536CE7300AD03E8 /* AudioUnitCaptrueManager.swift */; };
+		847242C325393F82009FE782 /* CameraConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847242C225393F82009FE782 /* CameraConfig.swift */; };
+		847242C625397379009FE782 /* CameraOpration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847242C525397379009FE782 /* CameraOpration.swift */; };
 		84ABF0842534390600773E3A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0832534390600773E3A /* AppDelegate.swift */; };
 		84ABF0862534390600773E3A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0852534390600773E3A /* SceneDelegate.swift */; };
-		84ABF0882534390600773E3A /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0872534390600773E3A /* ViewController.swift */; };
+		84ABF0882534390600773E3A /* AudioCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0872534390600773E3A /* AudioCaptureController.swift */; };
 		84ABF08B2534390600773E3A /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84ABF0892534390600773E3A /* Main.storyboard */; };
 		84ABF08D2534390800773E3A /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 84ABF08C2534390800773E3A /* Assets.xcassets */; };
 		84ABF0902534390800773E3A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84ABF08E2534390800773E3A /* LaunchScreen.storyboard */; };
@@ -19,11 +23,15 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		841630902537F9B500E0FC1A /* VideoCaptureRootController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureRootController.swift; sourceTree = "<group>"; };
+		841630992537FBC800E0FC1A /* VideoCaptureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCaptureController.swift; sourceTree = "<group>"; };
 		842570B42536CE7300AD03E8 /* AudioUnitCaptrueManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioUnitCaptrueManager.swift; sourceTree = "<group>"; };
+		847242C225393F82009FE782 /* CameraConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraConfig.swift; sourceTree = "<group>"; };
+		847242C525397379009FE782 /* CameraOpration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraOpration.swift; sourceTree = "<group>"; };
 		84ABF0802534390600773E3A /* AudioQueueCapture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioQueueCapture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		84ABF0832534390600773E3A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		84ABF0852534390600773E3A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
-		84ABF0872534390600773E3A /* ViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewController.swift; sourceTree = "<group>"; };
+		84ABF0872534390600773E3A /* AudioCaptureController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioCaptureController.swift; sourceTree = "<group>"; };
 		84ABF08A2534390600773E3A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		84ABF08C2534390800773E3A /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		84ABF08F2534390800773E3A /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
@@ -43,6 +51,51 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		841630932537FAAD00E0FC1A /* Class */ = {
+			isa = PBXGroup;
+			children = (
+				84ABF0872534390600773E3A /* AudioCaptureController.swift */,
+			);
+			path = Class;
+			sourceTree = "<group>";
+		};
+		841630942537FABB00E0FC1A /* Video Module */ = {
+			isa = PBXGroup;
+			children = (
+				841630952537FAD100E0FC1A /* Class */,
+				841630972537FAEF00E0FC1A /* Video Tools */,
+			);
+			path = "Video Module";
+			sourceTree = "<group>";
+		};
+		841630952537FAD100E0FC1A /* Class */ = {
+			isa = PBXGroup;
+			children = (
+				841630902537F9B500E0FC1A /* VideoCaptureRootController.swift */,
+				841630992537FBC800E0FC1A /* VideoCaptureController.swift */,
+				847242C225393F82009FE782 /* CameraConfig.swift */,
+				847242C525397379009FE782 /* CameraOpration.swift */,
+			);
+			path = Class;
+			sourceTree = "<group>";
+		};
+		841630962537FAE000E0FC1A /* Audio Tools */ = {
+			isa = PBXGroup;
+			children = (
+				84ABF0992534394F00773E3A /* AudioFileHandler.swift */,
+				84ABF09D25345A1100773E3A /* AudioQueueCaptureManager.swift */,
+				842570B42536CE7300AD03E8 /* AudioUnitCaptrueManager.swift */,
+			);
+			path = "Audio Tools";
+			sourceTree = "<group>";
+		};
+		841630972537FAEF00E0FC1A /* Video Tools */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "Video Tools";
+			sourceTree = "<group>";
+		};
 		84ABF0772534390600773E3A = {
 			isa = PBXGroup;
 			children = (
@@ -62,10 +115,10 @@
 		84ABF0822534390600773E3A /* AudioQueueCapture */ = {
 			isa = PBXGroup;
 			children = (
+				841630942537FABB00E0FC1A /* Video Module */,
 				84ABF0982534393200773E3A /* Audio Module */,
 				84ABF0832534390600773E3A /* AppDelegate.swift */,
 				84ABF0852534390600773E3A /* SceneDelegate.swift */,
-				84ABF0872534390600773E3A /* ViewController.swift */,
 				84ABF0892534390600773E3A /* Main.storyboard */,
 				84ABF08C2534390800773E3A /* Assets.xcassets */,
 				84ABF08E2534390800773E3A /* LaunchScreen.storyboard */,
@@ -77,9 +130,8 @@
 		84ABF0982534393200773E3A /* Audio Module */ = {
 			isa = PBXGroup;
 			children = (
-				84ABF0992534394F00773E3A /* AudioFileHandler.swift */,
-				84ABF09D25345A1100773E3A /* AudioQueueCaptureManager.swift */,
-				842570B42536CE7300AD03E8 /* AudioUnitCaptrueManager.swift */,
+				841630932537FAAD00E0FC1A /* Class */,
+				841630962537FAE000E0FC1A /* Audio Tools */,
 			);
 			path = "Audio Module";
 			sourceTree = "<group>";
@@ -154,11 +206,15 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				84ABF0882534390600773E3A /* ViewController.swift in Sources */,
+				84ABF0882534390600773E3A /* AudioCaptureController.swift in Sources */,
+				847242C325393F82009FE782 /* CameraConfig.swift in Sources */,
+				841630912537F9B500E0FC1A /* VideoCaptureRootController.swift in Sources */,
 				84ABF09A2534394F00773E3A /* AudioFileHandler.swift in Sources */,
 				84ABF09E25345A1100773E3A /* AudioQueueCaptureManager.swift in Sources */,
 				84ABF0842534390600773E3A /* AppDelegate.swift in Sources */,
+				847242C625397379009FE782 /* CameraOpration.swift in Sources */,
 				84ABF0862534390600773E3A /* SceneDelegate.swift in Sources */,
+				8416309A2537FBC800E0FC1A /* VideoCaptureController.swift in Sources */,
 				842570B52536CE7300AD03E8 /* AudioUnitCaptrueManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
