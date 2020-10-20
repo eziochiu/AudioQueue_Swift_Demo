@@ -108,6 +108,46 @@ class CameraOpration: NSObject {
         session?.commitConfiguration()
     }
     
+    func setCameraForHFRWithFrameRate(frameRate: Int) {
+        var frameRate = frameRate
+        let maxFrameRate = getMaxFrameRateByCurrentResolution()
+        if frameRate > maxFrameRate {
+            frameRate = maxFrameRate
+        }
+        model?.frameRate = frameRate
+        _ = CameraOpration.setCameraFrameRateAndResolutionWithFrameRate(rate: frameRate, resolutionHeight: model!.resolutionHeight, session: session!, position: model!.position, videoFormat: model!.videoFormat)
+    }
+    
+    func setCameraResolutionByActiveFormatWithHeight(height: Int) {
+        var height = height
+        let maxResolutionHeight = getMaxSupportResolutionByActiveFormat()
+        if height > maxResolutionHeight {
+            height = maxResolutionHeight
+        }
+        model?.resolutionHeight = height
+        _ = CameraOpration.setCameraFrameRateAndResolutionWithFrameRate(rate: model!.frameRate, resolutionHeight: height, session: session!, position: model!.position, videoFormat: model!.videoFormat)
+    }
+    
+    fileprivate func getMaxSupportResolutionByActiveFormat() -> Int {
+        return getDeviceSupportMaxResolutionByFrameRate(frameRate: model!.frameRate, position: model!.position, videoFormat: model!.videoFormat)
+    }
+    
+    fileprivate func getDeviceSupportMaxResolutionByFrameRate(frameRate: Int, position: AVCaptureDevice.Position, videoFormat: OSType) -> Int {
+        var maxResolutionHeight = 0
+        guard let captureDevice = CameraOpration.getCaptureDevicePosition(position: position) else { return 0}
+        for vFormat in captureDevice.formats {
+            let description = vFormat.formatDescription
+            let maxRate = Float((vFormat.videoSupportedFrameRateRanges[0]).maxFrameRate)
+            let dims = CMVideoFormatDescriptionGetDimensions(description)
+            if CMFormatDescriptionGetMediaSubType(description) == videoFormat && frameRate <= Int(maxRate) {
+                if CameraOpration.getResolutionWidthByHeight(height: Int(dims.height)) == dims.width {
+                    maxResolutionHeight = Int(dims.height)
+                }
+            }
+        }
+        return maxResolutionHeight
+    }
+    
     // MARK: - setFocusPoint
     
     @objc fileprivate func setFocusPointAuto() {

@@ -136,7 +136,7 @@
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <view contentMode="scaleToFill" translatesAutoresizingMaskIntoConstraints="NO" id="XbV-LS-m3E">
-                                <rect key="frame" x="328" y="343" width="240" height="50"/>
+                                <rect key="frame" x="298" y="343" width="300" height="50"/>
                                 <subviews>
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="jNX-Bc-JRw">
                                         <rect key="frame" x="0.0" y="0.0" width="60" height="50"/>
@@ -149,7 +149,7 @@
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="0pb-Zo-Viv">
                                         <rect key="frame" x="60" y="0.0" width="60" height="50"/>
                                         <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
-                                        <state key="normal" image="gearshape.fill" catalog="system"/>
+                                        <state key="normal" image="camera.metering.partial" catalog="system"/>
                                         <connections>
                                             <action selector="settingVC:" destination="kz7-aO-POY" eventType="touchUpInside" id="JSE-Mb-zSX"/>
                                         </connections>
@@ -170,25 +170,43 @@
                                             <action selector="flashModel:" destination="kz7-aO-POY" eventType="touchUpInside" id="ye1-x0-Dl5"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="2jW-Yw-xyk">
+                                        <rect key="frame" x="240" y="0.0" width="60" height="50"/>
+                                        <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
+                                        <state key="normal" image="forward.frame" catalog="system"/>
+                                        <connections>
+                                            <action selector="changeFrameRate:" destination="kz7-aO-POY" eventType="touchUpInside" id="Vcg-NB-h2a"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" red="0.0" green="0.0" blue="0.0" alpha="0.39810803471779338" colorSpace="custom" customColorSpace="sRGB"/>
                                 <constraints>
-                                    <constraint firstAttribute="width" constant="240" id="4Ak-L3-4a9"/>
+                                    <constraint firstAttribute="trailing" secondItem="2jW-Yw-xyk" secondAttribute="trailing" id="1F6-LI-0vt"/>
+                                    <constraint firstItem="0pb-Zo-Viv" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="2dY-Gf-zyX"/>
+                                    <constraint firstAttribute="width" constant="300" id="4Ak-L3-4a9"/>
+                                    <constraint firstItem="2jW-Yw-xyk" firstAttribute="top" secondItem="XbV-LS-m3E" secondAttribute="top" id="BX7-N9-l2c"/>
                                     <constraint firstAttribute="bottom" secondItem="jNX-Bc-JRw" secondAttribute="bottom" id="De1-9D-255"/>
                                     <constraint firstItem="Nzl-aM-hbF" firstAttribute="height" secondItem="jNX-Bc-JRw" secondAttribute="height" id="K8Q-8x-NBN"/>
+                                    <constraint firstAttribute="bottom" secondItem="2jW-Yw-xyk" secondAttribute="bottom" id="O9P-cq-tr7"/>
+                                    <constraint firstItem="2jW-Yw-xyk" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="Pjh-a4-H0F"/>
+                                    <constraint firstItem="Nzl-aM-hbF" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="R56-Ue-iRn"/>
+                                    <constraint firstItem="Nzl-aM-hbF" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="U5D-zr-o3c"/>
                                     <constraint firstItem="Nzl-aM-hbF" firstAttribute="top" secondItem="jNX-Bc-JRw" secondAttribute="top" id="VuY-oT-QXh"/>
                                     <constraint firstItem="Nzl-aM-hbF" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="Wfj-zV-zjL"/>
+                                    <constraint firstItem="2jW-Yw-xyk" firstAttribute="leading" secondItem="Nzl-aM-hbF" secondAttribute="trailing" id="XpT-gj-y1J"/>
                                     <constraint firstItem="Nzl-aM-hbF" firstAttribute="leading" secondItem="LEF-YN-rGG" secondAttribute="trailing" id="Y8C-tJ-B30"/>
                                     <constraint firstItem="LEF-YN-rGG" firstAttribute="top" secondItem="jNX-Bc-JRw" secondAttribute="top" id="YJk-0a-wbX"/>
                                     <constraint firstItem="LEF-YN-rGG" firstAttribute="height" secondItem="jNX-Bc-JRw" secondAttribute="height" id="cOY-KM-g9y"/>
                                     <constraint firstItem="0pb-Zo-Viv" firstAttribute="leading" secondItem="jNX-Bc-JRw" secondAttribute="trailing" id="erg-Cl-il4"/>
+                                    <constraint firstItem="LEF-YN-rGG" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="fF6-le-EDl"/>
                                     <constraint firstAttribute="height" constant="50" id="fL1-d9-pCf"/>
+                                    <constraint firstItem="LEF-YN-rGG" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="gLy-3t-201"/>
                                     <constraint firstItem="LEF-YN-rGG" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="jot-Sv-vXl"/>
                                     <constraint firstItem="jNX-Bc-JRw" firstAttribute="top" secondItem="XbV-LS-m3E" secondAttribute="top" id="laz-Bb-xYN"/>
                                     <constraint firstItem="0pb-Zo-Viv" firstAttribute="height" secondItem="jNX-Bc-JRw" secondAttribute="height" id="lgS-Xq-q0x"/>
+                                    <constraint firstItem="2jW-Yw-xyk" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="mX3-eF-UDI"/>
                                     <constraint firstItem="jNX-Bc-JRw" firstAttribute="leading" secondItem="XbV-LS-m3E" secondAttribute="leading" id="pGl-xN-pR6"/>
                                     <constraint firstItem="LEF-YN-rGG" firstAttribute="leading" secondItem="0pb-Zo-Viv" secondAttribute="trailing" id="rYR-Bu-X0K"/>
-                                    <constraint firstAttribute="trailing" secondItem="Nzl-aM-hbF" secondAttribute="trailing" id="swF-KW-bss"/>
                                     <constraint firstItem="0pb-Zo-Viv" firstAttribute="top" secondItem="jNX-Bc-JRw" secondAttribute="top" id="wAI-Ea-Sg8"/>
                                     <constraint firstItem="0pb-Zo-Viv" firstAttribute="width" secondItem="jNX-Bc-JRw" secondAttribute="width" id="yCV-mz-oVy"/>
                                 </constraints>
@@ -361,7 +379,7 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="qRG-3c-x1N" userLabel="First Responder" customClass="UIResponder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="411.59420289855075" y="883.92857142857144"/>
+            <point key="canvasLocation" x="411.16071428571428" y="882.60869565217399"/>
         </scene>
         <!--Tab Bar Controller-->
         <scene sceneID="WVY-FR-eDo">
@@ -403,7 +421,8 @@
     <resources>
         <image name="bolt.fill" catalog="system" width="101" height="128"/>
         <image name="camera.fill" catalog="system" width="128" height="94"/>
-        <image name="gearshape.fill" catalog="system" width="128" height="121"/>
+        <image name="camera.metering.partial" catalog="system" width="128" height="93"/>
+        <image name="forward.frame" catalog="system" width="128" height="99"/>
         <image name="mic.fill" catalog="system" width="108" height="128"/>
         <image name="rectangle.inset.topright.fill" catalog="system" width="128" height="93"/>
         <image name="video" catalog="system" width="128" height="83"/>

@@ -31,9 +31,16 @@ class VideoCaptureController: UIViewController {
     @IBOutlet weak var FPS: UILabel!
     @IBOutlet weak var exposureSlider: UISlider!
     
+    var displayLink: CADisplayLink?
+    
     static var videoGravity: Int = 0
     
+    static var resolutionHeight: Int = 0
+    
+    static var frameRate: Int = 0
+    
     var handle = CameraOpration()
+    
     var focusView = AdjustFocusView(frame: CGRect(x: 0, y: 0, width: 80, height: 80))
     
     deinit {
@@ -48,9 +55,9 @@ class VideoCaptureController: UIViewController {
         adjustVideoOrientation()
         NotificationCenter.default.addObserver(self, selector: #selector(adjustVideoOrientation), name: UIDevice.orientationDidChangeNotification, object: nil)
         configFocusView()
-        Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { (timer) in
-            self.linkFPS()
-        }
+        displayLink = CADisplayLink.init(target: Proxy(target: self), selector: #selector(linkFPS))
+        displayLink?.add(to: RunLoop.current, forMode: RunLoop.Mode.common)
+        
         exposureSlider.minimumValue = handle.getMinExposureValue()
         exposureSlider.maximumValue = handle.getMaxExposureValue()
         exposureSlider.value = 0
@@ -97,7 +104,48 @@ class VideoCaptureController: UIViewController {
         handle.switchCamera()
     }
     @IBAction func settingVC(_ sender: UIButton) {
-        
+        VideoCaptureController.resolutionHeight += 1
+        switch VideoCaptureController.resolutionHeight {
+        case 1:
+            handle.setCameraResolutionByActiveFormatWithHeight(height: 480)
+            break
+        case 2:
+            handle.setCameraResolutionByActiveFormatWithHeight(height: 720)
+            break
+        case 3:
+            handle.setCameraResolutionByActiveFormatWithHeight(height: 1080)
+            break
+        case 4:
+            handle.setCameraResolutionByActiveFormatWithHeight(height: 2160)
+            break
+        default:
+            break
+        }
+        if VideoCaptureController.resolutionHeight >= 4 {
+            VideoCaptureController.resolutionHeight = 0
+        }
+    }
+    @IBAction func changeFrameRate(_ sender: UIButton) {
+        VideoCaptureController.frameRate += 1
+        switch VideoCaptureController.frameRate {
+        case 1:
+            handle.setCameraForHFRWithFrameRate(frameRate: 25)
+            break
+        case 2:
+            handle.setCameraForHFRWithFrameRate(frameRate: 30)
+            break
+        case 3:
+            handle.setCameraForHFRWithFrameRate(frameRate: 50)
+            break
+        case 4:
+            handle.setCameraForHFRWithFrameRate(frameRate: 60)
+            break
+        default:
+            break
+        }
+        if VideoCaptureController.frameRate >= 4 {
+            VideoCaptureController.frameRate = 0
+        }
     }
     @IBAction func flashModel(_ sender: UIButton) {
         sender.isSelected = !sender.isSelected
