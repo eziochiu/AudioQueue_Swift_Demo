@@ -18,22 +18,99 @@ class CameraOpration: NSObject {
     var delegate: cameraOprationDelegate?
     var model: CameraConfig?
     
+    fileprivate static var count: Int = 0
+    fileprivate static var lastTime: Float = 0
+    
     fileprivate var session: AVCaptureSession?
     fileprivate var input: AVCaptureDeviceInput?
     fileprivate var videoDataOutput: AVCaptureVideoDataOutput?
     fileprivate var videoPreviewLayer: AVCaptureVideoPreviewLayer?
-    fileprivate var captureVideoFPS = 0
-    fileprivate var realTimeResolutionWidth = 0
-    fileprivate var realTimeResolutionHeight = 0
+    var captureVideoFPS = 0
+    var realTimeResolutionWidth = 0
+    var realTimeResolutionHeight = 0
     
     func startRuning() {
         session?.startRunning()
     }
     
+    func stopRunning() {
+        session?.stopRunning()
+    }
+    
+    // MARK: - getparams
+    func getMaxExposureValue() -> Float {
+        return self.input!.device.maxExposureTargetBias
+    }
+    
+    func getMinExposureValue() -> Float {
+        return self.input!.device.minExposureTargetBias
+    }
+    
+    func exposureNewValue(newValue: Float) {
+        if ((try? self.input!.device.lockForConfiguration()) != nil) {
+            self.input?.device.setExposureTargetBias(newValue, completionHandler: nil)
+            self.input?.device.unlockForConfiguration()
+        }
+    }
+    
+    func setWhiteBlanceValue(newValue: Float) {
+        if self.input!.device.isWhiteBalanceModeSupported(.locked) {
+            try? self.input?.device.lockForConfiguration()
+            guard let currentGains = self.input?.device.deviceWhiteBalanceGains else { return }
+            guard let currentTint = self.input?.device.temperatureAndTintValues(for: currentGains).tint else { return }
+            var tempAndTintValues = AVCaptureDevice.WhiteBalanceTemperatureAndTintValues()
+            tempAndTintValues.temperature = newValue
+            tempAndTintValues.tint = currentTint
+            guard let deviceGain = self.input?.device.deviceWhiteBalanceGains(for: tempAndTintValues) else { return }
+            let deviceGains = clampGains(deviceGain, toMinVal: 1.0, andMaxVal: self.input!.device.maxWhiteBalanceGain)
+            self.input?.device.setWhiteBalanceModeLocked(with: deviceGains, completionHandler: nil)
+            self.input?.device.unlockForConfiguration()
+        }
+    }
+
+    fileprivate func clampGains(_ gains: AVCaptureDevice.WhiteBalanceGains, toMinVal minVal: Float, andMaxVal maxVal: Float) -> AVCaptureDevice.WhiteBalanceGains {
+        var tmpGains = gains
+        tmpGains.blueGain = Float(max(min(tmpGains.blueGain, maxVal), minVal))
+        tmpGains.redGain = Float(max(min(tmpGains.redGain, maxVal), minVal))
+        tmpGains.greenGain = Float(max(min(tmpGains.greenGain, maxVal), minVal))
+        return tmpGains
+    }
+    
+    func setWhiteBlanceValueByTint(newValue: Float) {
+        if self.input!.device.isWhiteBalanceModeSupported(.locked) {
+            try? self.input?.device.lockForConfiguration()
+            guard let currentGains = self.input?.device.deviceWhiteBalanceGains else { return }
+            var deviceGains = clampGains(self.input!.device.deviceWhiteBalanceGains, toMinVal: 1.0, andMaxVal: self.input!.device.maxWhiteBalanceGain)
+            guard let currentTemperature = self.input?.device.temperatureAndTintValues(for: currentGains).temperature else { return }
+            var tempAndTintValues = AVCaptureDevice.WhiteBalanceTemperatureAndTintValues()
+            tempAndTintValues.temperature = currentTemperature
+            tempAndTintValues.tint = newValue
+            guard let deviceGain = self.input?.device.deviceWhiteBalanceGains(for: tempAndTintValues) else { return }
+            deviceGains = clampGains(deviceGain, toMinVal: 1.0, andMaxVal: self.input!.device.maxWhiteBalanceGain)
+            self.input?.device.setWhiteBalanceModeLocked(with: deviceGains, completionHandler: nil)
+            self.input?.device.unlockForConfiguration()
+        }
+    }
+    
+    func tourchState(isOpen: Bool) {
+        if (self.input!.device.hasTorch) {
+            try? self.input?.device.lockForConfiguration()
+            self.input!.device.torchMode = isOpen ? .on : .off
+            self.input?.device.unlockForConfiguration()
+        }else {
+            print("The device not support torch!")
+        }
+    }
+    
+    func setVideoGravity(videoGravity: AVLayerVideoGravity) {
+        session?.beginConfiguration()
+        videoPreviewLayer?.videoGravity = videoGravity
+        session?.commitConfiguration()
+    }
+    
     // MARK: - setFocusPoint
     
     @objc fileprivate func setFocusPointAuto() {
-        print("FocusPointAuto")
         setFocusPoint(point: self.model!.previewView!.center)
     }
     
@@ -215,7 +292,7 @@ class CameraOpration: NSObject {
         videoPreviewLayer.frame = model.previewView!.frame
         videoPreviewLayer.videoGravity = model.videoGravity
         
-        if videoPreviewLayer.connection!.isVideoStabilizationSupported {
+        if videoPreviewLayer.connection!.isVideoOrientationSupported  {
             videoPreviewLayer.connection?.videoOrientation = model.videoOrientation
         }
         previewViewLayer?.insertSublayer(videoPreviewLayer, at: 0)
@@ -228,7 +305,7 @@ class CameraOpration: NSObject {
         NotificationCenter.default.addObserver(self, selector: #selector(setFocusPointAuto), name: .AVCaptureDeviceSubjectAreaDidChange, object: nil)
     }
     
-    func adjustVideoStabilizationWithOutput(output: AVCaptureVideoDataOutput) {
+    fileprivate func adjustVideoStabilizationWithOutput(output: AVCaptureVideoDataOutput) {
         var devices: [AVCaptureDevice]?
         if #available(iOS 10.0, *) {
             let deviceSession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: self.model!.position)
@@ -253,7 +330,7 @@ class CameraOpration: NSObject {
         }
     }
     
-    static func setCameraFrameRateAndResolutionWithFrameRate(rate: Int, resolutionHeight: Int, session: AVCaptureSession, position: AVCaptureDevice.Position, videoFormat: OSType) -> Bool {
+    fileprivate static func setCameraFrameRateAndResolutionWithFrameRate(rate: Int, resolutionHeight: Int, session: AVCaptureSession, position: AVCaptureDevice.Position, videoFormat: OSType) -> Bool {
         guard let capture = getCaptureDevicePosition(position: position) else { return false }
         var isSucess = false
         for vFormat in capture.formats {
@@ -280,7 +357,7 @@ class CameraOpration: NSObject {
         return isSucess
     }
     
-    static func getResolutionWidthByHeight(height: Int) -> Int32 {
+    fileprivate static func getResolutionWidthByHeight(height: Int) -> Int32 {
         switch height {
             case 2160:
                 return 3840
@@ -295,7 +372,7 @@ class CameraOpration: NSObject {
         }
     }
     
-    static func getCaptureDevicePosition(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
+    fileprivate static func getCaptureDevicePosition(position: AVCaptureDevice.Position) -> AVCaptureDevice? {
         var devices: [AVCaptureDevice]?
         if #available(iOS 10.0, *) {
             let deviceSession = AVCaptureDevice.DiscoverySession(deviceTypes: [.builtInWideAngleCamera], mediaType: .video, position: position)
@@ -310,8 +387,79 @@ class CameraOpration: NSObject {
         }
         return nil
     }
+    
+    // MARK: - Orientation
+    func adjustVideoOrientationByScreenOrientation(orientation: UIInterfaceOrientation) {
+        adjustVideoOrientation(orientation: orientation, previewFrame: model!.previewView!.frame, previewLayer: videoPreviewLayer!, videoOutput: videoDataOutput!)
+    }
+    
+    fileprivate func adjustVideoOrientation(orientation: UIInterfaceOrientation, previewFrame: CGRect, previewLayer: AVCaptureVideoPreviewLayer, videoOutput: AVCaptureVideoDataOutput) {
+        previewLayer.frame = previewFrame
+        switch orientation {
+        case .portrait:
+            adjustAVOutputOrientation(avcaptureOrientation: .portrait, videoOutput: videoOutput)
+            break
+        case .portraitUpsideDown:
+            adjustAVOutputOrientation(avcaptureOrientation: .portraitUpsideDown, videoOutput: videoOutput)
+            break
+        case .landscapeLeft:
+            previewLayer.connection?.videoOrientation = .landscapeLeft
+            adjustAVOutputOrientation(avcaptureOrientation: .landscapeLeft, videoOutput: videoOutput)
+            break
+        case .landscapeRight:
+            previewLayer.connection?.videoOrientation = .landscapeRight
+            adjustAVOutputOrientation(avcaptureOrientation: .landscapeRight, videoOutput: videoOutput)
+            break
+        default:
+            break
+        }
+    }
+    
+    fileprivate func adjustAVOutputOrientation(avcaptureOrientation: AVCaptureVideoOrientation, videoOutput: AVCaptureVideoDataOutput) {
+        for connection in videoOutput.connections {
+            for port in connection.inputPorts {
+                if port.mediaType == .video {
+                    if connection.isVideoOrientationSupported {
+                        connection.videoOrientation = avcaptureOrientation
+                    }
+                }
+            }
+        }
+    }
 }
 
 extension CameraOpration: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
+    func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        if output.isKind(of: AVCaptureVideoDataOutput.self) {
+            print("Video Output")
+        } else {
+            print("Audio Output")
+        }
+        delegate?.captureOutput?(output, didDropSampleBuffer: sampleBuffer, fromConnection: connection)
+    }
     
+    func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
+        if output.isKind(of: AVCaptureVideoDataOutput.self) {
+            calculatorCaptureFPS()
+            guard let pix = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+            realTimeResolutionWidth = CVPixelBufferGetWidth(pix)
+            realTimeResolutionHeight = CVPixelBufferGetHeight(pix)
+        } else {
+            print("Audio Output")
+        }
+    }
+    
+    fileprivate func calculatorCaptureFPS() {
+        let hostClockRef = CMClockGetHostTimeClock()
+        let hostTime = CMClockGetTime(hostClockRef)
+        let nowTime: Float = Float(CMTimeGetSeconds(hostTime))
+        if nowTime - CameraOpration.lastTime >= 1 {
+            self.captureVideoFPS = CameraOpration.count
+            CameraOpration.lastTime = nowTime
+            CameraOpration.count = 0
+        } else {
+            CameraOpration.count += 1
+        }
+        
+    }
 }

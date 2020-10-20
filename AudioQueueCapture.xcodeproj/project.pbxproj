@@ -20,6 +20,7 @@
 		84ABF0902534390800773E3A /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 84ABF08E2534390800773E3A /* LaunchScreen.storyboard */; };
 		84ABF09A2534394F00773E3A /* AudioFileHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0992534394F00773E3A /* AudioFileHandler.swift */; };
 		84ABF09E25345A1100773E3A /* AudioQueueCaptureManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF09D25345A1100773E3A /* AudioQueueCaptureManager.swift */; };
+		84C08192253D453A0077BB22 /* AdjustFocusView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C08191253D453A0077BB22 /* AdjustFocusView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -38,6 +39,7 @@
 		84ABF0912534390800773E3A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		84ABF0992534394F00773E3A /* AudioFileHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioFileHandler.swift; sourceTree = "<group>"; };
 		84ABF09D25345A1100773E3A /* AudioQueueCaptureManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioQueueCaptureManager.swift; sourceTree = "<group>"; };
+		84C08191253D453A0077BB22 /* AdjustFocusView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdjustFocusView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -75,6 +77,7 @@
 				841630992537FBC800E0FC1A /* VideoCaptureController.swift */,
 				847242C225393F82009FE782 /* CameraConfig.swift */,
 				847242C525397379009FE782 /* CameraOpration.swift */,
+				84C08191253D453A0077BB22 /* AdjustFocusView.swift */,
 			);
 			path = Class;
 			sourceTree = "<group>";
@@ -214,6 +217,7 @@
 				84ABF0842534390600773E3A /* AppDelegate.swift in Sources */,
 				847242C625397379009FE782 /* CameraOpration.swift in Sources */,
 				84ABF0862534390600773E3A /* SceneDelegate.swift in Sources */,
+				84C08192253D453A0077BB22 /* AdjustFocusView.swift in Sources */,
 				8416309A2537FBC800E0FC1A /* VideoCaptureController.swift in Sources */,
 				842570B52536CE7300AD03E8 /* AudioUnitCaptrueManager.swift in Sources */,
 			);

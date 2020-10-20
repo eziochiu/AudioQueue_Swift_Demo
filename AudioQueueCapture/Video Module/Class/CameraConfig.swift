@@ -26,7 +26,7 @@ class CameraConfig: NSObject {
     /// 相机位置
     var position: AVCaptureDevice.Position = .back
     var videoGravity: AVLayerVideoGravity = .resizeAspect
-    var videoOrientation: AVCaptureVideoOrientation = .portrait
+    var videoOrientation: AVCaptureVideoOrientation = .landscapeRight
     var isEnableVideoStabilization: Bool = false
     
     init(previewView: UIView?, preset: AVCaptureSession.Preset, frameRate: Int, resolutionHeight: Int, videoFormat: OSType, torchMode: AVCaptureDevice.TorchMode, focusMode: AVCaptureDevice.FocusMode, exposureMode: AVCaptureDevice.ExposureMode, flashMode: AVCaptureDevice.FlashMode, whiteBalanceMode: AVCaptureDevice.WhiteBalanceMode, position: AVCaptureDevice.Position, videoGravity: AVLayerVideoGravity, videoOrientation: AVCaptureVideoOrientation, isEnableVideoStabilization: Bool) {
