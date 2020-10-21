@@ -31,6 +31,14 @@ class VideoCaptureController: UIViewController {
     @IBOutlet weak var FPS: UILabel!
     @IBOutlet weak var exposureSlider: UISlider!
     
+    var cropView: CropView?
+    
+    /// 是否截图
+    var isCrop = false
+    
+    /// 是否开启GPU截图
+    var isUseGPU = true
+    
     var displayLink: CADisplayLink?
     
     static var videoGravity: Int = 0
@@ -65,7 +73,7 @@ class VideoCaptureController: UIViewController {
     
     func configCamera() {
         print("\(UIDevice.current.orientation.rawValue)")
-        let cameraModel = CameraConfig(previewView: self.view, preset: .hd1280x720, frameRate: 60, resolutionHeight: 720, videoFormat: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, torchMode: .off, focusMode: .locked, exposureMode: .autoExpose, flashMode: .auto, whiteBalanceMode: .autoWhiteBalance, position: .front, videoGravity: .resizeAspectFill, videoOrientation: .landscapeLeft, isEnableVideoStabilization: true)
+        let cameraModel = CameraConfig(previewView: self.view, preset: .hd1920x1080, frameRate: 60, resolutionHeight: 1080, videoFormat:kCVPixelFormatType_420YpCbCr8BiPlanarFullRange, torchMode: .off, focusMode: .locked, exposureMode: .autoExpose, flashMode: .auto, whiteBalanceMode: .autoWhiteBalance, position: .front, videoGravity: .resizeAspectFill, videoOrientation: .landscapeLeft, isEnableVideoStabilization: true)
         handle.delegate = self
         handle.initCameraWithModel(model: cameraModel)
         handle.startRuning()
@@ -74,18 +82,31 @@ class VideoCaptureController: UIViewController {
     func configFocusView() {
         focusView.isHidden = true
         view.addSubview(focusView)
+        
+        cropView = CropView().initWithOPen4K(open4k: false, useGPU: isUseGPU, cropWidth: 1280, cropHeight: 720, screenResolutionW: 1920, screenResolutionH: 1080)
+        cropView?.isEnableCrop(true, session: handle.session, capture: handle.videoPreviewLayer, mainView: self.view)
+        self.view.bringSubviewToFront(cropView!)
     }
     
     func setupGestureRecognizer() {
         let doubleTapAction = UITapGestureRecognizer(target: self, action: #selector(handleDoubleClickAction(recognizer:)))
         doubleTapAction.numberOfTapsRequired = 2
         view.addGestureRecognizer(doubleTapAction)
+        
+        let pressGesture = UILongPressGestureRecognizer(target: self, action: #selector(longPressed(recognizer:)))
+        
+        view.addGestureRecognizer(pressGesture)
     }
     
     @objc func handleDoubleClickAction(recognizer: UITapGestureRecognizer) {
         let point = recognizer.location(in: recognizer.view)
         focusView.frameByAnimationCenter(center: point)
         handle.setFocusPoint(point: point)
+    }
+    
+    @objc func longPressed(recognizer: UILongPressGestureRecognizer) {
+        let point = recognizer.location(in: recognizer.view)
+        cropView?.longPressedWithCurrentPoint(point: point, isOpenGPU: isUseGPU)
     }
     
     @objc func adjustVideoOrientation() {
@@ -180,14 +201,46 @@ class VideoCaptureController: UIViewController {
     @IBAction func colorValueChanged(_ sender: UISlider) {
         handle.setWhiteBlanceValueByTint(newValue: sender.value)
     }
+    @IBAction func cropImageAction(_ sender: UIButton) {
+        isCrop = true
+    }
 }
 
 extension VideoCaptureController: cameraOprationDelegate {
     func captureOutput(_ output: AVCaptureOutput?, didOutputSampleBuffer: CMSampleBuffer?, fromConnection: AVCaptureConnection?) {
-        
+        guard let sampleBuffer = didOutputSampleBuffer else { return }
+        var cropedBuffer: CMSampleBuffer?
+        if isCrop {
+            if self.isUseGPU {
+                cropedBuffer = cropView?.cropSampleBufferByHardware(sampleBuffer: sampleBuffer)
+            } else {
+                cropedBuffer = cropView?.cropSampleBufferBySoftware(sampleBuffer: sampleBuffer)
+            }
+            if let sampleBuffer = cropedBuffer {
+                getSnapImage(sampleBuffer: sampleBuffer)
+            }
+            isCrop = false
+        }
     }
     
     func captureOutput(_ output: AVCaptureOutput?, didDropSampleBuffer: CMSampleBuffer?, fromConnection: AVCaptureConnection?) {
         
+    }
+    
+    func getSnapImage(sampleBuffer: CMSampleBuffer) {
+        let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer)!
+        let ciimage = CIImage(cvImageBuffer: imageBuffer)
+        let context = CIContext(options: nil)
+        let cgImage = context.createCGImage(ciimage, from: ciimage.extent)!
+        let image = UIImage(cgImage: cgImage)
+        UIImageWriteToSavedPhotosAlbum(image, self, #selector(image(_:didFinishSavingWithError:contextInfo:)), nil)
+    }
+    
+    @objc func image(_ image: UIImage, didFinishSavingWithError error: NSError?, contextInfo: UnsafeRawPointer) {
+        if error != nil {
+            print("保存图片失败")
+        } else {
+            print("保存图片成功")
+        }
     }
 }

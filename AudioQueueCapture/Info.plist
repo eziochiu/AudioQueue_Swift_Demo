@@ -24,6 +24,8 @@
 	<string>use</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>use</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>use</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

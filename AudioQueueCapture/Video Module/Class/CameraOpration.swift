@@ -21,10 +21,10 @@ class CameraOpration: NSObject {
     fileprivate static var count: Int = 0
     fileprivate static var lastTime: Float = 0
     
-    fileprivate var session: AVCaptureSession?
+    fileprivate(set) var session: AVCaptureSession?
     fileprivate var input: AVCaptureDeviceInput?
     fileprivate var videoDataOutput: AVCaptureVideoDataOutput?
-    fileprivate var videoPreviewLayer: AVCaptureVideoPreviewLayer?
+    fileprivate(set) var videoPreviewLayer: AVCaptureVideoPreviewLayer?
     var captureVideoFPS = 0
     var realTimeResolutionWidth = 0
     var realTimeResolutionHeight = 0
@@ -471,9 +471,9 @@ class CameraOpration: NSObject {
 extension CameraOpration: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptureAudioDataOutputSampleBufferDelegate {
     func captureOutput(_ output: AVCaptureOutput, didDrop sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
         if output.isKind(of: AVCaptureVideoDataOutput.self) {
-            print("Video Output")
+//            print("Video Output")
         } else {
-            print("Audio Output")
+//            print("Audio Output")
         }
         delegate?.captureOutput?(output, didDropSampleBuffer: sampleBuffer, fromConnection: connection)
     }
@@ -485,8 +485,9 @@ extension CameraOpration: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptur
             realTimeResolutionWidth = CVPixelBufferGetWidth(pix)
             realTimeResolutionHeight = CVPixelBufferGetHeight(pix)
         } else {
-            print("Audio Output")
+//            print("Audio Output")
         }
+        delegate?.captureOutput?(output, didOutputSampleBuffer: sampleBuffer, fromConnection: connection)
     }
     
     fileprivate func calculatorCaptureFPS() {

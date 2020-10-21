@@ -358,6 +358,17 @@
                                     </userDefinedRuntimeAttribute>
                                 </userDefinedRuntimeAttributes>
                             </view>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="system" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="ZdC-Fp-X8R">
+                                <rect key="frame" x="808" y="174.5" width="44" height="44"/>
+                                <constraints>
+                                    <constraint firstAttribute="width" constant="44" id="4IM-LY-ie5"/>
+                                    <constraint firstAttribute="height" constant="44" id="5q6-C1-g3V"/>
+                                </constraints>
+                                <state key="normal" title="截图"/>
+                                <connections>
+                                    <action selector="cropImageAction:" destination="kz7-aO-POY" eventType="touchUpInside" id="3bn-Dv-o0z"/>
+                                </connections>
+                            </button>
                         </subviews>
                         <viewLayoutGuide key="safeArea" id="I8V-TH-eaJ"/>
                         <color key="backgroundColor" systemColor="systemBackgroundColor"/>
@@ -367,7 +378,9 @@
                             <constraint firstItem="QD9-KA-ViQ" firstAttribute="trailing" secondItem="I8V-TH-eaJ" secondAttribute="trailing" constant="-10" id="9Al-ya-qWa"/>
                             <constraint firstItem="XbV-LS-m3E" firstAttribute="top" secondItem="Ehz-IV-b1S" secondAttribute="bottom" constant="22" id="AI1-aJ-mOg"/>
                             <constraint firstItem="XbV-LS-m3E" firstAttribute="centerX" secondItem="I8V-TH-eaJ" secondAttribute="centerX" id="ISw-q2-rla"/>
+                            <constraint firstItem="ZdC-Fp-X8R" firstAttribute="centerY" secondItem="I8V-TH-eaJ" secondAttribute="centerY" id="gi9-e4-buf"/>
                             <constraint firstItem="XbV-LS-m3E" firstAttribute="bottom" secondItem="I8V-TH-eaJ" secondAttribute="bottom" id="iSS-Or-3uG"/>
+                            <constraint firstItem="I8V-TH-eaJ" firstAttribute="trailing" secondItem="ZdC-Fp-X8R" secondAttribute="trailing" id="jW3-4c-qJJ"/>
                         </constraints>
                     </view>
                     <navigationItem key="navigationItem" id="EVn-PX-UqP"/>
