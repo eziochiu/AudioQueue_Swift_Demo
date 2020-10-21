@@ -85,7 +85,6 @@ class VideoCaptureController: UIViewController {
         
         cropView = CropView().initWithOPen4K(open4k: false, useGPU: isUseGPU, cropWidth: 1280, cropHeight: 720, screenResolutionW: 1920, screenResolutionH: 1080)
         cropView?.isEnableCrop(true, session: handle.session, capture: handle.videoPreviewLayer, mainView: self.view)
-        self.view.bringSubviewToFront(cropView!)
     }
     
     func setupGestureRecognizer() {

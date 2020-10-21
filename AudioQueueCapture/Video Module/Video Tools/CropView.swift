@@ -131,7 +131,7 @@ class CropView: UIView {
 
             if let mainView = mainView {
                 if !isDescendant(of: mainView) {
-                    mainView.addSubview(self)
+                    mainView.insertSubview(self, at: 1)
                     descendantOfMainView = true
                 }
             }

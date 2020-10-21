@@ -6,6 +6,11 @@
 //
 
 import UIKit
+import MetalPerformanceShaders
+import MetalPerformanceShadersGraph
+import MetalKit
+import CoreMedia
+import GLKit
 import AVFoundation
 
 @objc protocol cameraOprationDelegate {
@@ -14,6 +19,20 @@ import AVFoundation
 }
 
 class CameraOpration: NSObject {
+    
+    // Metal
+    var mtkView: MTKView?
+    var commandQueue: MTLCommandQueue?
+    var vertexBuffer: MTLBuffer?
+    var textureCache: CVMetalTextureCache?
+    var yuv2rgbComputePipeline: MTLComputePipelineState?
+    var convertMatrix: float3x3?
+    var texture: MTLTexture?
+    let textureRenderSignal = DispatchSemaphore(value: 0)
+    let textureUpdateSignal = DispatchSemaphore(value: 1)
+    var luminance: MTLTexture?
+    var chroma: MTLTexture?
+    var renderPipelineState: MTLRenderPipelineState?
     
     var delegate: cameraOprationDelegate?
     var model: CameraConfig?
@@ -336,13 +355,52 @@ class CameraOpration: NSObject {
             videoPreviewLayer.connection?.videoOrientation = model.videoOrientation
         }
         previewViewLayer?.insertSublayer(videoPreviewLayer, at: 0)
-        
+//        setupMTKView()
         self.input = input;
         self.session = session
         self.videoDataOutput = videoDataOutput
         self.videoPreviewLayer = videoPreviewLayer
         
         NotificationCenter.default.addObserver(self, selector: #selector(setFocusPointAuto), name: .AVCaptureDeviceSubjectAreaDidChange, object: nil)
+    }
+    
+    fileprivate func setupMTKView() {
+        mtkView = MTKView(frame: model!.previewView!.frame)
+        mtkView?.device = MTLCreateSystemDefaultDevice()
+        model!.previewView?.insertSubview(mtkView!, at: 0)
+        mtkView?.delegate = self
+        mtkView?.framebufferOnly = false
+        commandQueue = mtkView?.device?.makeCommandQueue()
+        let library = mtkView?.device!.makeDefaultLibrary()!
+                
+        // setup compute pipeline
+        let yuv2rgbFunc = library?.makeFunction(name: "yuvToRGB")!
+        yuv2rgbComputePipeline = try! mtkView?.device!.makeComputePipelineState(function: yuv2rgbFunc!)
+        CVMetalTextureCacheCreate(kCFAllocatorDefault, nil, mtkView!.device!, nil, &textureCache)
+        convertMatrix = float3x3(SIMD3<Float>(1.164, 1.164, 1.164), SIMD3<Float>(0, -0.231, 2.112), SIMD3<Float>(1.793, -0.533, 0))
+        
+        // setup render pipeline
+        let vertexFunc = library!.makeFunction(name: "vertexShader")!
+        let fragmentFunc = library!.makeFunction(name: "fragmentShader")!
+        let pipelineDesc = MTLRenderPipelineDescriptor()
+        pipelineDesc.fragmentFunction = fragmentFunc
+        pipelineDesc.vertexFunction = vertexFunc
+        pipelineDesc.colorAttachments[0].pixelFormat = mtkView!.colorPixelFormat
+        renderPipelineState = try! mtkView?.device!.makeRenderPipelineState(descriptor: pipelineDesc)
+        
+        let vertices = [PWMVertex(position: vector_float2(-1, -1), coordinate: vector_float2(1, 1)),
+                        PWMVertex(position: vector_float2(1, -1), coordinate: vector_float2(1, 0)),
+                        PWMVertex(position: vector_float2(-1, 1), coordinate: vector_float2(0, 1)),
+                        PWMVertex(position: vector_float2(1, 1), coordinate: vector_float2(0, 0))]
+        vertexBuffer = mtkView?.device!.makeBuffer(length: MemoryLayout<PWMVertex>.size * vertices.count, options: MTLResourceOptions.storageModeShared)!
+        memcpy(vertexBuffer!.contents(), vertices, MemoryLayout<PWMVertex>.size * vertices.count)
+        
+        let textureDesc = MTLTextureDescriptor()
+        textureDesc.width = Int(model!.previewView!.frame.width)
+        textureDesc.height = Int(model!.previewView!.frame.height)
+        textureDesc.pixelFormat = .bgra8Unorm
+        textureDesc.usage = MTLTextureUsage(rawValue: MTLTextureUsage.shaderRead.rawValue | MTLTextureUsage.shaderWrite.rawValue)
+        texture = mtkView?.device!.makeTexture(descriptor: textureDesc)!
     }
     
     fileprivate func adjustVideoStabilizationWithOutput(output: AVCaptureVideoDataOutput) {
@@ -484,11 +542,44 @@ extension CameraOpration: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptur
             guard let pix = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
             realTimeResolutionWidth = CVPixelBufferGetWidth(pix)
             realTimeResolutionHeight = CVPixelBufferGetHeight(pix)
+            if self.mtkView != nil {
+                updateTexture(sampleBuffer: sampleBuffer)
+            }
         } else {
 //            print("Audio Output")
         }
         delegate?.captureOutput?(output, didOutputSampleBuffer: sampleBuffer, fromConnection: connection)
     }
+    
+    fileprivate func updateTexture(sampleBuffer: CMSampleBuffer) {
+            guard textureUpdateSignal.wait(timeout: .now()) == .success else {
+                return
+            }
+            
+            let imagePixel = CMSampleBufferGetImageBuffer(sampleBuffer)!
+            let yWidth = CVPixelBufferGetWidthOfPlane(imagePixel, 0)
+            let yHeight = CVPixelBufferGetHeightOfPlane(imagePixel, 0)
+            
+            let uvWidth = CVPixelBufferGetWidthOfPlane(imagePixel, 1)
+            let uvHeight = CVPixelBufferGetHeightOfPlane(imagePixel, 1)
+            
+            CVPixelBufferLockBaseAddress(imagePixel, CVPixelBufferLockFlags(rawValue: 0))
+            var yTexture: CVMetalTexture?
+            var uvTexture: CVMetalTexture?
+            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache!, imagePixel, nil, .r8Unorm, yWidth, yHeight, 0, &yTexture)
+            CVMetalTextureCacheCreateTextureFromImage(kCFAllocatorDefault, textureCache!, imagePixel, nil, .rg8Unorm, uvWidth, uvHeight, 1, &uvTexture)
+            
+            CVPixelBufferUnlockBaseAddress(imagePixel, CVPixelBufferLockFlags(rawValue: 0))
+            guard yTexture != nil && uvTexture != nil else {
+                return
+            }
+            
+            // Get MTLTexture instance
+            luminance = CVMetalTextureGetTexture(yTexture!)
+            chroma = CVMetalTextureGetTexture(uvTexture!)
+            
+            textureRenderSignal.signal()
+        }
     
     fileprivate func calculatorCaptureFPS() {
         let hostClockRef = CMClockGetHostTimeClock()
@@ -502,5 +593,62 @@ extension CameraOpration: AVCaptureVideoDataOutputSampleBufferDelegate, AVCaptur
             CameraOpration.count += 1
         }
         
+    }
+}
+
+extension CameraOpration: MTKViewDelegate {
+    func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
+        
+    }
+    
+    func draw(in view: MTKView) {
+        guard textureRenderSignal.wait(timeout: .now()) == .success else {
+                    return
+        }
+        
+        guard let commandBuffer = commandQueue?.makeCommandBuffer() else {
+            return
+        }
+        
+        guard let computeEncoder = commandBuffer.makeComputeCommandEncoder() else {
+            return
+        }
+        
+        // compute pass
+        computeEncoder.setComputePipelineState(yuv2rgbComputePipeline!)
+        computeEncoder.setTexture(luminance, index: 0)
+        computeEncoder.setTexture(chroma, index: 1)
+        computeEncoder.setTexture(texture, index: 2)
+        computeEncoder.setBytes(&convertMatrix, length: MemoryLayout<float3x3>.size, index: 0)
+        
+        let width = texture!.width
+        let height = texture!.height
+        
+        let groupSize = 32
+        let groupCountW = (width + groupSize) / groupSize - 1
+        let groupCountH = (height + groupSize) / groupSize - 1
+        computeEncoder.dispatchThreadgroups(MTLSize(width: groupCountW, height: groupCountH, depth: 1),
+                                            threadsPerThreadgroup: MTLSize(width: groupSize, height: groupSize, depth: 1))
+        computeEncoder.endEncoding()
+        
+        // render pass
+        guard let renderPassDesc = view.currentRenderPassDescriptor else {
+            return
+        }
+        
+        guard let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDesc) else {
+            return
+        }
+
+        renderEncoder.setRenderPipelineState(renderPipelineState!)
+        renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
+        renderEncoder.setFragmentTexture(texture, index: 0)
+        
+        renderEncoder.drawPrimitives(type: .triangleStrip, vertexStart: 0, vertexCount: 4)
+        renderEncoder.endEncoding()
+        commandBuffer.present(view.currentDrawable!)
+        commandBuffer.commit()
+        
+        textureUpdateSignal.signal()
     }
 }

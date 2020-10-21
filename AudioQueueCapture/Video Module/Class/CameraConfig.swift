@@ -13,7 +13,7 @@ class CameraConfig: NSObject {
     var preset: AVCaptureSession.Preset = .hd1920x1080
     var frameRate: Int = 60
     var resolutionHeight: Int = 1080
-    var videoFormat: OSType = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+    var videoFormat: OSType = kCVPixelFormatType_32BGRA
     /// 闪光灯模式
     var torchModel: AVCaptureDevice.TorchMode = .off
     /// 聚焦模式

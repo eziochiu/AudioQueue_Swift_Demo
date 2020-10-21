@@ -12,6 +12,7 @@
 		842570B52536CE7300AD03E8 /* AudioUnitCaptrueManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 842570B42536CE7300AD03E8 /* AudioUnitCaptrueManager.swift */; };
 		847242C325393F82009FE782 /* CameraConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847242C225393F82009FE782 /* CameraConfig.swift */; };
 		847242C625397379009FE782 /* CameraOpration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 847242C525397379009FE782 /* CameraOpration.swift */; };
+		84793BB6254016B200902EA2 /* shader.metal in Sources */ = {isa = PBXBuildFile; fileRef = 84793BB5254016B200902EA2 /* shader.metal */; };
 		84ABF0842534390600773E3A /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0832534390600773E3A /* AppDelegate.swift */; };
 		84ABF0862534390600773E3A /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0852534390600773E3A /* SceneDelegate.swift */; };
 		84ABF0882534390600773E3A /* AudioCaptureController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84ABF0872534390600773E3A /* AudioCaptureController.swift */; };
@@ -30,6 +31,9 @@
 		842570B42536CE7300AD03E8 /* AudioUnitCaptrueManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioUnitCaptrueManager.swift; sourceTree = "<group>"; };
 		847242C225393F82009FE782 /* CameraConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraConfig.swift; sourceTree = "<group>"; };
 		847242C525397379009FE782 /* CameraOpration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraOpration.swift; sourceTree = "<group>"; };
+		84793BB5254016B200902EA2 /* shader.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = shader.metal; sourceTree = "<group>"; };
+		84793BB8254019AD00902EA2 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
+		84793BB925401A0700902EA2 /* AudioQueueCapture-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "AudioQueueCapture-Bridging-Header.h"; sourceTree = "<group>"; };
 		84ABF0802534390600773E3A /* AudioQueueCapture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = AudioQueueCapture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		84ABF0832534390600773E3A /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		84ABF0852534390600773E3A /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -66,6 +70,7 @@
 		841630942537FABB00E0FC1A /* Video Module */ = {
 			isa = PBXGroup;
 			children = (
+				84793BB925401A0700902EA2 /* AudioQueueCapture-Bridging-Header.h */,
 				841630952537FAD100E0FC1A /* Class */,
 				841630972537FAEF00E0FC1A /* Video Tools */,
 			);
@@ -79,6 +84,8 @@
 				841630992537FBC800E0FC1A /* VideoCaptureController.swift */,
 				847242C225393F82009FE782 /* CameraConfig.swift */,
 				847242C525397379009FE782 /* CameraOpration.swift */,
+				84793BB5254016B200902EA2 /* shader.metal */,
+				84793BB8254019AD00902EA2 /* ShaderTypes.h */,
 			);
 			path = Class;
 			sourceTree = "<group>";
@@ -173,6 +180,7 @@
 				TargetAttributes = {
 					84ABF07F2534390600773E3A = {
 						CreatedOnToolsVersion = 12.0.1;
+						LastSwiftMigration = 1210;
 					};
 				};
 			};
@@ -212,6 +220,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				84793BB6254016B200902EA2 /* shader.metal in Sources */,
 				84ABF0882534390600773E3A /* AudioCaptureController.swift in Sources */,
 				847242C325393F82009FE782 /* CameraConfig.swift in Sources */,
 				841630912537F9B500E0FC1A /* VideoCaptureRootController.swift in Sources */,
@@ -370,6 +379,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = AM4U55P6ZN;
 				INFOPLIST_FILE = AudioQueueCapture/Info.plist;
@@ -380,6 +390,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.eziochiu.AudioQueueCapture;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "${SRCROOT}/AudioQueueCapture/Video Module/AudioQueueCapture-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -390,6 +402,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = AM4U55P6ZN;
 				INFOPLIST_FILE = AudioQueueCapture/Info.plist;
@@ -400,6 +413,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.eziochiu.AudioQueueCapture;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "${SRCROOT}/AudioQueueCapture/Video Module/AudioQueueCapture-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
